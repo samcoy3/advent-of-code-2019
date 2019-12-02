@@ -1,12 +1,19 @@
 cabal-version: 1.12
 
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: d7b3cc2386a57c53cbdbe04b125ff3ecc347e89ae9871daed819dd0c8730de24
+
 name:           aoc2019
-version:        0.1
-description:    My Advent of Code 2019 solutions, written in Haskell.
-homepage:       https://github.com/githubuser/aoc2019#readme
-bug-reports:    https://github.com/githubuser/aoc2019/issues
+version:        0.2
+description:    My Advent of Code solutions, written in Haskell.
+homepage:       https://github.com/samcoy3/advent-of-code-2019#readme
+bug-reports:    https://github.com/samcoy3/advent-of-code-2019/issues
 author:         Sam Coy
-maintainer:     Sam Coy
+maintainer:     samcoy3@gmail.com
+copyright:      Sam Coy
 license:        BSD3
 build-type:     Simple
 extra-source-files:
@@ -14,18 +21,20 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/aoc2019
+  location: https://github.com/samcoy3/advent-of-code-2019
 
 library
   exposed-modules:
       Day01
+      Day02
       Util
   other-modules:
       Paths_aoc2019
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      array >=0.5
+    , base >=4.7 && <5
   default-language: Haskell2010
 
 executable aoc2019-exe
@@ -37,5 +46,6 @@ executable aoc2019-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aoc2019
+    , array >=0.5
     , base >=4.7 && <5
   default-language: Haskell2010
