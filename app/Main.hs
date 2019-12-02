@@ -3,9 +3,10 @@ module Main where
 import Text.Read
 
 import qualified Day01 (part1, part2)
+import qualified Day02 (part1, part2)
 
 maxDay :: Int
-maxDay = 1
+maxDay = 2
 
 performSolution :: (Show a, Show b) => (a, b) -> IO ()
 performSolution (part1, part2) = do
@@ -32,4 +33,5 @@ main = do
   response <- getNumber
   case response of
     1 -> performSolution (Day01.part1, Day01.part2)
+    2 -> performSolution (Day02.part1, Day02.part2)
     _ -> putStrLn "This should not be reachable."
