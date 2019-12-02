@@ -34,4 +34,4 @@ main = do
   case response of
     1 -> performSolution (Day01.part1, Day01.part2)
     2 -> performSolution (Day02.part1, Day02.part2)
-    _ -> putStrLn "This should not be reachable."
+    _ -> error "This should be unreachable."
