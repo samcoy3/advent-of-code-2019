@@ -3,8 +3,8 @@ module Intcode where
 import Util ((!*), split)
 
 import Data.Array
-import Data.Ix
 
+type InstructionPointer = Int
 type MemoryState = Array Int Int
 type ProgramState = (Int, MemoryState)
 type Operation = ProgramState -> ProgramState
@@ -15,28 +15,28 @@ readIntcode = (\x -> listArray (0, (length x) - 1) x)
   . (split (==','))
 
 runIntcode' :: ProgramState -> ProgramState
-runIntcode' (p, a) = case a ! p of
-  1 -> runIntcode' . addOp $ (p, a)
-  2 -> runIntcode' . multOp $ (p, a)
-  99 -> (p, a)
+runIntcode' (ip, mem) = case mem ! ip of
+  1 -> runIntcode' . addOp $ (ip, mem)
+  2 -> runIntcode' . multOp $ (ip, mem)
+  99 -> (ip, mem)
   _ -> error "Invalid opcode"
 
 runIntcode :: MemoryState -> MemoryState
-runIntcode arr = snd . runIntcode' $ (0, arr)
+runIntcode mem = snd . runIntcode' $ (0, mem)
 
 programOutput :: MemoryState -> Int
-programOutput = (flip (!) 0)
+programOutput mem = mem ! 0
 
 -- OPERATIONS
 
 addOp :: Operation
-addOp (p, a) = (p', a') where
-  p' = p + 4
-  value = (a !* (p + 1)) + (a !* (p + 2))
-  a' = a // [(a ! (p + 3), value)]
+addOp (ip, mem) = (ip', mem') where
+  ip' = ip + 4
+  value = (mem !* (ip + 1)) + (mem !* (ip + 2))
+  mem' = mem // [(mem ! (ip + 3), value)]
 
 multOp :: Operation
-multOp (p, a) = (p', a') where
-  p' = p + 4
-  value = (a !* (p + 1)) * (a !* (p + 2))
-  a' = a // [(a ! (p + 3), value)]
+multOp (ip, mem) = (ip', mem') where
+  ip' = ip + 4
+  value = (mem !* (ip + 1)) * (mem !* (ip + 2))
+  mem' = mem // [(mem ! (ip + 3), value)]

@@ -3,7 +3,6 @@ module Day03 where
 import Util (split, rawInput)
 
 import Data.Maybe
-import Data.List
 
 type Point = (Int, Int)
 type Segment = (Point, Point)
