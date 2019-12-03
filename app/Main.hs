@@ -4,9 +4,10 @@ import Text.Read
 
 import qualified Day01 (part1, part2)
 import qualified Day02 (part1, part2)
+import qualified Day03 (part1, part2)
 
 maxDay :: Int
-maxDay = 2
+maxDay = 3
 
 performSolution :: (Show a, Show b) => (a, b) -> IO ()
 performSolution (part1, part2) = do
@@ -34,4 +35,5 @@ main = do
   case response of
     1 -> performSolution (Day01.part1, Day01.part2)
     2 -> performSolution (Day02.part1, Day02.part2)
+    3 -> performSolution (Day03.part1, Day03.part2)
     _ -> error "This should be unreachable."
