@@ -69,15 +69,16 @@ part1 = minimum
 -- The function gets all the segments before the point, and the segment containing the point
 -- It folds over the segments before the point, adding their lengths
 -- It adds on the partial segment containing the point
-distanceAlongWire :: Point -> Wire -> Int
+distanceAlongWire :: Point -> Wire -> Maybe Int
 distanceAlongWire p w = case span (\s -> cross (p,p) s == Nothing) w of
-  (restOfWire, partialSegment:_) ->
+  (restOfWire, partialSegment:_) -> Just $
     (foldr (+) 0 (map (\s -> manhattanDistance (fst s) (snd s)) restOfWire))
     + (manhattanDistance p $ fst partialSegment)
-  _ -> 0
+  _ -> Nothing
 
 part2 :: Int
 part2 = minimum
-  . (map (\p -> (distanceAlongWire p w1) + (distanceAlongWire p w2)))
+  . catMaybes
+  . (map (\p -> (+) <$> (distanceAlongWire p w1) <*> (distanceAlongWire p w2)))
   $ crossingPoints w1 w2 where
   (w1,w2) = input
