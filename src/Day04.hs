@@ -15,10 +15,11 @@ generateAscNumbers l' = map read $ generateAscStrings l' ['1'..'9'] where
   generateAscStrings 1 ran = [[x] | x <- ran]
   generateAscStrings l ran = foldr (++) [] [ map ((:) x) $ generateAscStrings (l-1) [x..'9'] | x <- ran ]
 
--- Importantly, this function's second argument *must be sorted*
+-- Returns a sublist, where all elements are within a range, of a list
+-- Importantly, this function's second argument (the list) *must be sorted*
 -- But our generator's list is, so it's fine
 clampToRange :: (Int, Int) -> [Int] -> [Int]
-clampToRange ran = (takeWhile (<=b)) . (dropWhile (<a)) where (a,b) = ran
+clampToRange (a, b) = (takeWhile (<=b)) . (dropWhile (<a))
 
 -- Checks whether a number contains any consecutive, identical digits
 -- i.e. the precise opposite of the number being comprised of unique digits

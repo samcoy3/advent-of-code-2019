@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8ac93b0df88bf5710d579f104313491eced844801a9d0d9510f780f3cdfd8c6b
+-- hash: d6d83ca362824c97c5ba48d121da90be34410c8bb27fcddcbc6749123cfdc68d
 
 name:           aoc2019
-version:        0.4
+version:        0.4.1
 description:    My Advent of Code solutions, written in Haskell.
 homepage:       https://github.com/samcoy3/advent-of-code-2019#readme
 bug-reports:    https://github.com/samcoy3/advent-of-code-2019/issues
