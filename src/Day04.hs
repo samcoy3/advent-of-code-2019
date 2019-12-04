@@ -15,7 +15,8 @@ generateAscNumbers l' = map read $ generateAscStrings l' ['1'..'9'] where
   generateAscStrings 1 ran = [[x] | x <- ran]
   generateAscStrings l ran = foldr (++) [] [ map ((:) x) $ generateAscStrings (l-1) [x..'9'] | x <- ran ]
 
--- Returns a sublist, where all elements are within a range, of a list
+-- Returns a sublist of a sorted list
+-- All elements of this sublist are within a range
 -- Importantly, this function's second argument (the list) *must be sorted*
 -- But our generator's list is, so it's fine
 clampToRange :: (Int, Int) -> [Int] -> [Int]
@@ -26,7 +27,7 @@ clampToRange (a, b) = (takeWhile (<=b)) . (dropWhile (<a))
 consecutive :: Int -> Bool
 consecutive = (any (>1)) . (map length) . (groupBy (==)) . show
 
--- Checks whether a number contains a pair of numbers
+-- Checks whether a number contains a consecutive pair of identical digits
 containsPair :: Int -> Bool
 containsPair = (elem 2) . (map length) . (groupBy (==)) . show
 
