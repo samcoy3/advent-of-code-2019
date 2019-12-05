@@ -9,7 +9,7 @@ filename :: String
 filename = "input/Day05.txt"
 
 input :: Array Int Int
-input = readIntcode . rawInput $ filename
+input = readIntcode $ rawInput filename
 
 part1 :: Int
 part1 = head $ runIntcodeWithIO input [1]

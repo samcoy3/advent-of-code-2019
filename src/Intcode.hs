@@ -39,14 +39,14 @@ readIntcode = (\x -> listArray (0, (length x) - 1) x)
 -- Runs a ProgramState until an opcode of 99 is reached
 runIntcode' :: ProgramState -> ProgramState
 runIntcode' p@ProgramState{..} = (case instruction of
-  1 -> runIntcode' $ addOp p operands
-  2 -> runIntcode' $ multOp p operands
+  1 -> runIntcode' $ binaryOp (+) p operands
+  2 -> runIntcode' $ binaryOp (*) p operands
   3 -> runIntcode' $ inputOp p operands
   4 -> runIntcode' $ outputOp p operands
-  5 -> runIntcode' $ jitOp p operands
-  6 -> runIntcode' $ jifOp p operands
-  7 -> runIntcode' $ lessThanOp p operands
-  8 -> runIntcode' $ equalsOp p operands
+  5 -> runIntcode' $ jumpOp (/=0) p operands
+  6 -> runIntcode' $ jumpOp (==0) p operands
+  7 -> runIntcode' $ binaryOp (\x y -> if x < y then 1 else 0) p operands
+  8 -> runIntcode' $ binaryOp (\x y -> if x == y then 1 else 0) p operands
   99 -> p
   _ -> error $ "Invalid opcode " ++ (show instruction)) where
   val = mem ! ip
@@ -69,20 +69,18 @@ day2Output mem = mem ! 0
 -- Operations are functions that take some numbers and return a modified ProgramState
 -- To access their nth operand, we use <ops !! (n-1)>
 -- Location to store the result is determined by directly accessing the parameter, every time
-addOp :: Operation
-addOp p@ProgramState{..} ops =
+
+-- This represents a simple binary operation
+-- This function takes a binary operator, and applies it to the first two parameters
+-- It then stores the result in the third parameter
+binaryOp :: (Int -> Int -> Int) -> Operation
+binaryOp (<^>) p@ProgramState{..} ops =
   p {ip = ip + 4,
      mem = mem // [(loc, val)]} where
   loc = mem ! (ip + 3)
-  val = ops !! 0 + ops !! 1
+  val = (ops !! 0) <^> (ops !! 1)
 
-multOp :: Operation
-multOp p@ProgramState{..} ops =
-  p {ip = ip + 4,
-     mem = mem // [(loc, val)]} where
-  loc = mem ! (ip + 3)
-  val = ops !! 0 * ops !! 1
-
+-- Takes input off the input buffer and stores it in the address given by the first parameter
 inputOp :: Operation
 inputOp p@ProgramState{..} _ =
   p {ip = ip + 2,
@@ -93,32 +91,16 @@ inputOp p@ProgramState{..} _ =
     _ -> error "Run out of input!"
   loc = mem ! (ip + 1)
 
+-- Takes the first parameter and pushes it to the output buffer
 outputOp :: Operation
 outputOp p@ProgramState{..} ops =
   p {ip = ip + 2,
      output = val : output} where
   val = ops !! 0
 
-jitOp :: Operation
-jitOp p@ProgramState{..} ops =
-  p {ip = if ops !! 0 /= 0 then ops !! 1 else ip + 3,
-     input = ip : input} where
-
-jifOp :: Operation
-jifOp p@ProgramState{..} ops =
-  p {ip = if ops !! 0 == 0 then ops !! 1 else ip + 3,
-     input = ip : input} where
-
-lessThanOp :: Operation
-lessThanOp p@ProgramState{..} ops =
-  p {ip = ip + 4,
-     mem = mem // [(loc, val)]} where
-  loc = mem ! (ip + 3)
-  val = if ops !! 0 < ops !! 1 then 1 else 0
-
-equalsOp :: Operation
-equalsOp p@ProgramState{..} ops =
-  p {ip = ip + 4,
-     mem = mem // [(loc, val)]} where
-  loc = mem ! (ip + 3)
-  val = if ops !! 0 == ops !! 1 then 1 else 0
+-- Takes a predicate and applies it to the first parameter
+-- If the predicate is true, then it moves the instruction pointer to the position given by the second parameter
+-- If false, simply advances the instruction pointer as normal
+jumpOp :: (Int -> Bool) -> Operation
+jumpOp predicate p@ProgramState{..} ops =
+  p {ip = if predicate $ ops !! 0 then ops !! 1 else ip + 3} where
