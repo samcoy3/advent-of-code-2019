@@ -6,9 +6,10 @@ import qualified Day01 (part1, part2)
 import qualified Day02 (part1, part2)
 import qualified Day03 (part1, part2)
 import qualified Day04 (part1, part2)
+import qualified Day05 (part1, part2)
 
 maxDay :: Int
-maxDay = 4
+maxDay = 5
 
 performSolution :: (Show a, Show b) => (a, b) -> IO ()
 performSolution (part1, part2) = do
@@ -37,5 +38,6 @@ main = do
     1 -> performSolution (Day01.part1, Day01.part2)
     2 -> performSolution (Day02.part1, Day02.part2)
     3 -> performSolution (Day03.part1, Day03.part2)
-    4 -> performSolution (Day04.part1, Day03.part2)
+    4 -> performSolution (Day04.part1, Day04.part2)
+    5 -> performSolution (Day05.part1, Day05.part2)
     _ -> error "This should be unreachable."
