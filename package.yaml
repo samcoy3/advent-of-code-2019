@@ -1,5 +1,5 @@
 name:                aoc2019
-version:             0.5.2
+version:             0.6
 github:              "samcoy3/advent-of-code-2019"
 license:             BSD3
 author:              "Sam Coy"
@@ -21,6 +21,7 @@ description:         My Advent of Code solutions, written in Haskell.
 dependencies:
 - base >= 4.7 && < 5
 - array >= 0.5
+- containers >= 0.6
 
 library:
   source-dirs: src
