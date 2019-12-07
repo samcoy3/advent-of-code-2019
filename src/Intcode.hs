@@ -5,6 +5,7 @@ module Intcode where
 import Util ((!*), split)
 
 import Data.Array
+import qualified Data.Map as M
 
 type MemoryState = Array Int Int
 type InstructionPointer = Int
@@ -19,6 +20,30 @@ data ProgramState = ProgramState
                      ip :: InstructionPointer,
                      input :: [Int],
                      output :: [Int]}
+data StepResult = NeedInput | Halt | UpdatedState ProgramState
+
+-- Makes a program with the memory and input given
+initialiseProgram :: MemoryState -> [Int] -> ProgramState
+initialiseProgram mem input = ProgramState mem 0 input []
+
+-- Adds input to a program's input buffer
+sendInput :: ProgramState -> [Int] -> ProgramState
+sendInput p@ProgramState{..} i = p {input = input ++ i}
+
+-- Clears a program's output buffer
+clearOutput :: ProgramState -> ProgramState
+clearOutput p = p {output = []}
+
+-- A map that associates opcodes with operations
+operationMap :: M.Map Int Operation
+operationMap = M.fromList [(1, binaryOp (+)),
+                           (2, binaryOp (*)),
+                           (3, inputOp),
+                           (4, outputOp),
+                           (5, jumpOp (/=0)),
+                           (6, jumpOp (==0)),
+                           (7, binaryOp $ \x y -> if x < y then 1 else 0),
+                           (8, binaryOp $ \x y -> if x == y then 1 else 0)]
 
 -- This gets us a list of all the numbers the operations have to think about
 -- It strips away all of the parameter mode complexity
@@ -36,30 +61,46 @@ readIntcode = (\x -> listArray (0, (length x) - 1) x)
   . (map read)
   . (split (==','))
 
--- Runs a ProgramState until an opcode of 99 is reached
-runIntcode' :: ProgramState -> ProgramState
-runIntcode' p@ProgramState{..} = (case instruction of
-  1 -> runIntcode' $ binaryOp (+) p operands
-  2 -> runIntcode' $ binaryOp (*) p operands
-  3 -> runIntcode' $ inputOp p operands
-  4 -> runIntcode' $ outputOp p operands
-  5 -> runIntcode' $ jumpOp (/=0) p operands
-  6 -> runIntcode' $ jumpOp (==0) p operands
-  7 -> runIntcode' $ binaryOp (\x y -> if x < y then 1 else 0) p operands
-  8 -> runIntcode' $ binaryOp (\x y -> if x == y then 1 else 0) p operands
-  99 -> p
-  _ -> error $ "Invalid opcode " ++ (show instruction)) where
+-- A function that performs one step of a ProgramState and returns a StateResult
+step :: ProgramState -> StepResult
+step p@ProgramState{..}
+    | instruction == 3 && input == [] = NeedInput
+    | instruction >= 1 && instruction <= 8
+      = UpdatedState $ (operationMap M.! instruction) p operands
+    | instruction == 99 = Halt
+    | otherwise = error $ "Invalid opcode " ++ (show instruction) where
   val = mem ! ip
   instruction = val `mod` 100
   operands = getOperandList val mem ip
 
+-- Runs a ProgramState until an opcode of 99 is reached
+runIntcodeUntilHalt :: ProgramState -> ProgramState
+runIntcodeUntilHalt p = (case p' of
+                  NeedInput -> error "This program should never run out of input"
+                  Halt -> p
+                  UpdatedState newState -> runIntcodeUntilHalt newState) where
+  p' = step p
+
+-- Runs a ProgramState until either:
+-- * The program halts
+-- * The program needs input
+-- Returns an ([Int], Maybe ProgramState) tuple.
+-- The first element of the tuple is the current output buffer of the program
+-- The second element of the tuple is Just the program (if it simply needs input), or Nothing if it has halted
+runIntcodeWhileInput :: ProgramState -> ([Int], Maybe ProgramState)
+runIntcodeWhileInput p = (case p' of
+                            NeedInput -> (output p, Just p)
+                            Halt -> (output p, Nothing)
+                            UpdatedState newState -> runIntcodeWhileInput newState) where
+  p' = step p
+
 -- Given a MemoryState, runs an Intcode program with the instruction pointer set to 0
 runIntcode :: MemoryState -> MemoryState
-runIntcode mem' = mem . runIntcode' $ ProgramState mem' 0 [] []
+runIntcode mem' = mem . runIntcodeUntilHalt $ initialiseProgram mem' []
 
 -- Given a MemoryState and some input, runs an Intcode program with the instruction pointer set to 0
 runIntcodeWithIO :: MemoryState -> [Int] -> [Int]
-runIntcodeWithIO mem' input' = output . runIntcode' $ ProgramState mem' 0 input' []
+runIntcodeWithIO mem' input' = output . runIntcodeUntilHalt $ initialiseProgram mem' input'
 
 -- Legacy function for Day 2.
 day2Output :: MemoryState -> Int
