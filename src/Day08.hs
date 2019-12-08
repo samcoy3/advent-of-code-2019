@@ -42,7 +42,7 @@ combineLayers topLayer bottomLayer = zipWith combineLines topLayer bottomLayer w
 
 -- Converts the layer into a string
 displayLayer :: Layer -> String
-displayLayer l = (++) "\n" $ unlines . map concat . map (map $ \x -> if x == 1 then "■" else "□") $ l
+displayLayer = (++) "\n" . unlines . map concat . map (map $ \x -> if x == 1 then "■" else "□")
 
 part2 :: String
 part2 = displayLayer $ foldl1 combineLayers input
