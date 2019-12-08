@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module Main where
 
 import Text.Read
@@ -14,10 +16,19 @@ import qualified Day08 (part1, part2)
 maxDay :: Int
 maxDay = 8
 
-performSolution :: (Show a, Show b) => (a, b) -> IO ()
+class TermDisplayable a where
+  term :: a -> String
+
+instance TermDisplayable Int where
+  term = show
+
+instance TermDisplayable String where
+  term = id
+
+performSolution :: (TermDisplayable a, TermDisplayable b) => (a, b) -> IO ()
 performSolution (part1, part2) = do
-  putStrLn $ "Part 1: " ++ (show part1)
-  putStrLn $ "Part 2: " ++ (show part2)
+  putStrLn $ "Part 1: " ++ (term part1)
+  putStrLn $ "Part 2: " ++ (term part2)
 
 getNumber :: IO Int
 getNumber = do
