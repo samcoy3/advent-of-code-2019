@@ -12,14 +12,14 @@ inputProgram :: MemoryState
 inputProgram = readIntcode . rawInput $ filename
 
 -- Just folds over the list of amplifiers, using the "signals" as the accumulating value in the fold
-runAmplifiers :: MemoryState -> [Int] -> [Int] -> [Int]
+runAmplifiers :: MemoryState -> [Integer] -> [Integer] -> [Integer]
 runAmplifiers mem input' phases = foldl (\io phase -> runIntcodeWithIO mem $ phase:io) input' phases
 
-part1 :: Int
+part1 :: Integer
 part1 = maximum . (map head) $ [runAmplifiers inputProgram [0] phases | phases <- permutations [0..4]]
 
 -- Given a list of integers, makes a list of programs with the input program as the memory, and the list, element-wise, as the input to each
-initialiseAmplifiers :: [Int] -> [ProgramState]
+initialiseAmplifiers :: [Integer] -> [ProgramState]
 initialiseAmplifiers = map $ initialiseProgram inputProgram . pure
 
 -- Runs a list of programs in the following way:
@@ -32,12 +32,12 @@ initialiseAmplifiers = map $ initialiseProgram inputProgram . pure
 -- For my input (and all those I've seen) it is, but this is not specified
 -- This implementation is technically incorrect (it closes the communication loop; if say "B" were removed then "A" would feed output to "C")
 -- But within the scope of the question this seems not to matter
-runUntilExhausted :: [Int] -> [ProgramState] -> [Int]
+runUntilExhausted :: [Integer] -> [ProgramState] -> [Integer]
 runUntilExhausted _ [] = error "Can't run zero programs!"
 runUntilExhausted i (p:[]) = fst $ runIntcodeWhileInput (sendInput p i)
 runUntilExhausted i (p:ps) = case runIntcodeWhileInput (sendInput p i) of
   (out, Nothing) -> runUntilExhausted (reverse out) ps
   (out, Just p') -> runUntilExhausted (reverse out) (ps ++ [clearOutput p'])
 
-part2 :: Int
+part2 :: Integer
 part2 = maximum . (map head) $ [runUntilExhausted [0] $ initialiseAmplifiers perm | perm <- permutations [5..9]]

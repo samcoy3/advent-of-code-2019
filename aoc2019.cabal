@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0d8470c84cdd0fff5d52bcae5a095708cb5a8af0e0cae4ebbb7e329f4bc32ef8
+-- hash: 01462ef335ba2eb20e820f4ccae676484c670c6a1ab868d98096b37c247d54db
 
 name:           aoc2019
-version:        0.8.2
+version:        0.9
 description:    My Advent of Code solutions, written in Haskell.
 homepage:       https://github.com/samcoy3/advent-of-code-2019#readme
 bug-reports:    https://github.com/samcoy3/advent-of-code-2019/issues
@@ -33,6 +33,7 @@ library
       Day06
       Day07
       Day08
+      Day09
       Intcode
       Util
   other-modules:

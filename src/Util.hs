@@ -1,7 +1,7 @@
 module Util where
 
 import System.IO.Unsafe
-import Data.Array
+import qualified Data.Map as M
 
 rawInput :: FilePath -> String
 rawInput = unsafePerformIO . readFile
@@ -15,7 +15,14 @@ split p xs = (case chunk of
     chunk = fst b
     r = snd b
 
--- This infix operator gets the element at the position given by the value at p
--- Useful for Intcode operators
-(!*) :: (Ix a) => Array a a -> a -> a
-arr !* p = (arr ! (arr ! p))
+(!@) :: (Num a, Ord a) => M.Map a a -> a -> a
+(!@) = flip $ M.findWithDefault 0
+
+(!@*) :: (Num a, Ord a) => M.Map a a -> a -> a
+m !@* k = m !@ (m !@ k)
+
+relativeAccess :: (Num a, Ord a) => a -> M.Map a a -> a -> a
+relativeAccess r m k = m !@ ((m !@ k) + r)
+
+(//) :: (Num a, Ord a) => M.Map a a -> [(a, a)] -> M.Map a a
+m // pairs = M.union (M.fromList pairs) m
