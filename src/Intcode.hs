@@ -2,32 +2,32 @@
 
 module Intcode where
 
-import Util ((!*), split)
+import Util ((!@), (!@*), (//), split)
 
-import Data.Array
 import qualified Data.Map as M
+import Data.Map ((!))
 
-type MemoryState = Array Int Int
-type InstructionPointer = Int
+type MemoryState = M.Map Integer Integer
+type InstructionPointer = Integer
 
-type Instruction = Int
-type Operands = [Int]
+type Instruction = Integer
+type Operands = [Integer]
 
 type Operation = ProgramState -> Operands -> ProgramState
 
 data ProgramState = ProgramState
                     {mem :: MemoryState,
                      ip :: InstructionPointer,
-                     input :: [Int],
-                     output :: [Int]}
+                     input :: [Integer],
+                     output :: [Integer]}
 data StepResult = NeedInput | Halt | UpdatedState ProgramState
 
 -- Makes a program with the memory and input given
-initialiseProgram :: MemoryState -> [Int] -> ProgramState
+initialiseProgram :: MemoryState -> [Integer] -> ProgramState
 initialiseProgram mem input = ProgramState mem 0 input []
 
 -- Adds input to a program's input buffer
-sendInput :: ProgramState -> [Int] -> ProgramState
+sendInput :: ProgramState -> [Integer] -> ProgramState
 sendInput p@ProgramState{..} i = p {input = input ++ i}
 
 -- Clears a program's output buffer
@@ -35,7 +35,7 @@ clearOutput :: ProgramState -> ProgramState
 clearOutput p = p {output = []}
 
 -- A map that associates opcodes with operations
-operationMap :: M.Map Int Operation
+operationMap :: M.Map Integer Operation
 operationMap = M.fromList [(1, binaryOp (+)),
                            (2, binaryOp (*)),
                            (3, inputOp),
@@ -51,13 +51,13 @@ getOperandList :: Instruction -> MemoryState -> InstructionPointer -> Operands
 getOperandList instruction mem ip = zipWith
                                 (\addr mode -> mode mem addr)
                                 [ip+1..] modes where
-  modes = (flip (++) $ repeat (!*))
-          . (map (\x -> if x == '1' then (!) else (!*)))
+  modes = (flip (++) $ repeat (!@*))
+          . (map (\x -> if x == '1' then (!@) else (!@*)))
           . reverse . show $ instruction `div` 100
 
 -- Reads in an Intcode program
 readIntcode :: String -> MemoryState
-readIntcode = (\x -> listArray (0, (length x) - 1) x)
+readIntcode = (\x -> M.fromList $ zip [0..] x)
   . (map read)
   . (split (==','))
 
@@ -87,7 +87,7 @@ runIntcodeUntilHalt p = (case p' of
 -- Returns an ([Int], Maybe ProgramState) tuple.
 -- The first element of the tuple is the current output buffer of the program
 -- The second element of the tuple is Just the program (if it simply needs input), or Nothing if it has halted
-runIntcodeWhileInput :: ProgramState -> ([Int], Maybe ProgramState)
+runIntcodeWhileInput :: ProgramState -> ([Integer], Maybe ProgramState)
 runIntcodeWhileInput p = (case p' of
                             NeedInput -> (output p, Just p)
                             Halt -> (output p, Nothing)
@@ -99,11 +99,11 @@ runIntcode :: MemoryState -> MemoryState
 runIntcode mem' = mem . runIntcodeUntilHalt $ initialiseProgram mem' []
 
 -- Given a MemoryState and some input, runs an Intcode program with the instruction pointer set to 0
-runIntcodeWithIO :: MemoryState -> [Int] -> [Int]
+runIntcodeWithIO :: MemoryState -> [Integer] -> [Integer]
 runIntcodeWithIO mem' input' = output . runIntcodeUntilHalt $ initialiseProgram mem' input'
 
 -- Legacy function for Day 2.
-day2Output :: MemoryState -> Int
+day2Output :: MemoryState -> Integer
 day2Output mem = mem ! 0
 
 -- OPERATIONS
@@ -114,7 +114,7 @@ day2Output mem = mem ! 0
 -- This represents a simple binary operation
 -- This function takes a binary operator, and applies it to the first two parameters
 -- It then stores the result in the third parameter
-binaryOp :: (Int -> Int -> Int) -> Operation
+binaryOp :: (Integer -> Integer -> Integer) -> Operation
 binaryOp (<^>) p@ProgramState{..} ops =
   p {ip = ip + 4,
      mem = mem // [(loc, val)]} where
@@ -142,6 +142,6 @@ outputOp p@ProgramState{..} ops =
 -- Takes a predicate and applies it to the first parameter
 -- If the predicate is true, then it moves the instruction pointer to the position given by the second parameter
 -- If false, simply advances the instruction pointer as normal
-jumpOp :: (Int -> Bool) -> Operation
+jumpOp :: (Integer -> Bool) -> Operation
 jumpOp predicate p@ProgramState{..} ops =
   p {ip = if predicate $ ops !! 0 then ops !! 1 else ip + 3} where

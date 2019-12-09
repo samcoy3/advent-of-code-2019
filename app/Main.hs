@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 
 module Main where
 
@@ -19,10 +19,10 @@ maxDay = 8
 class TermDisplayable a where
   term :: a -> String
 
-instance TermDisplayable Int where
+instance (Show a) => TermDisplayable a where
   term = show
 
-instance TermDisplayable String where
+instance {-# OVERLAPS #-} TermDisplayable String where
   term = id
 
 performSolution :: (TermDisplayable a, TermDisplayable b) => (a, b) -> IO ()
