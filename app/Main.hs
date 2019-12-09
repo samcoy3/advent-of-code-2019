@@ -12,9 +12,10 @@ import qualified Day05 (part1, part2)
 import qualified Day06 (part1, part2)
 import qualified Day07 (part1, part2)
 import qualified Day08 (part1, part2)
+import qualified Day09 (part1, part2)
 
 maxDay :: Int
-maxDay = 8
+maxDay = 9
 
 class TermDisplayable a where
   term :: a -> String
@@ -57,4 +58,5 @@ main = do
     6 -> performSolution (Day06.part1, Day06.part2)
     7 -> performSolution (Day07.part1, Day07.part2)
     8 -> performSolution (Day08.part1, Day08.part2)
+    9 -> performSolution (Day09.part1, Day09.part2)
     _ -> error "This should be unreachable."

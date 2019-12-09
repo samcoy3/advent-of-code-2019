@@ -21,5 +21,8 @@ split p xs = (case chunk of
 (!@*) :: (Num a, Ord a) => M.Map a a -> a -> a
 m !@* k = m !@ (m !@ k)
 
+relativeAccess :: (Num a, Ord a) => a -> M.Map a a -> a -> a
+relativeAccess r m k = m !@ ((m !@ k) + r)
+
 (//) :: (Num a, Ord a) => M.Map a a -> [(a, a)] -> M.Map a a
 m // pairs = M.union (M.fromList pairs) m
