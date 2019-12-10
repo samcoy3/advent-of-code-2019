@@ -6,6 +6,14 @@ import qualified Data.Map as M
 rawInput :: FilePath -> String
 rawInput = unsafePerformIO . readFile
 
+-- Returns the co-ordinates (with 0,0 in the top left), of the character in the array of strings
+coOrdsOf :: Char -> [String] -> [(Int, Int)]
+coOrdsOf c ss = map (\(x,y,_) -> (x,y))
+  . filter (\(_,_,ch) -> ch == c)
+  . concat
+  . map (\l -> zipWith (\y xs -> (fst xs, y, snd xs)) (repeat $ fst l) (zip [0..] $ snd l))
+  $ zip [0..] ss
+
 -- Splits a list by a predicate, returning consecutive chunks of the list where the predicate is not true
 split :: (a -> Bool) -> [a] -> [[a]]
 split p xs = (case chunk of
