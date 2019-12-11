@@ -73,7 +73,7 @@ part1 = M.size $ runPaintJob (initialiseProgram input [0]) M.empty Up (0,0)
 
 printTile :: TileColour -> Char
 printTile White = '■'
-printTile Black = '□'
+printTile Black = ' '
 
 -- Given a map of the hull, print it to a string
 renderAsString :: M.Map Point TileColour -> String
