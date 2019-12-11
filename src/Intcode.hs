@@ -51,6 +51,10 @@ initialiseProgram mem input = ProgramState mem 0 0 input []
 sendInput :: ProgramState -> [Integer] -> ProgramState
 sendInput p@ProgramState{..} i = p {input = input ++ i}
 
+-- Get a program's output buffer
+getOutput :: ProgramState -> [Integer]
+getOutput ProgramState{..} = output
+
 -- Clears a program's output buffer
 clearOutput :: ProgramState -> ProgramState
 clearOutput p = p {output = []}
