@@ -14,9 +14,10 @@ import qualified Day07 (part1, part2)
 import qualified Day08 (part1, part2)
 import qualified Day09 (part1, part2)
 import qualified Day10 (part1, part2)
+import qualified Day11 (part1, part2)
 
 maxDay :: Int
-maxDay = 10
+maxDay = 11
 
 class TermDisplayable a where
   term :: a -> String
@@ -25,7 +26,7 @@ instance (Show a) => TermDisplayable a where
   term = show
 
 instance {-# OVERLAPS #-} TermDisplayable String where
-  term = id
+  term = (++) "\n"
 
 performSolution :: (TermDisplayable a, TermDisplayable b) => (a, b) -> IO ()
 performSolution (part1, part2) = do
@@ -61,4 +62,5 @@ main = do
     8 -> performSolution (Day08.part1, Day08.part2)
     9 -> performSolution (Day09.part1, Day09.part2)
     10 -> performSolution (Day10.part1, Day10.part2)
+    11 -> performSolution (Day11.part1, Day11.part2)
     _ -> error "This should be unreachable."
