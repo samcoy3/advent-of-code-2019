@@ -30,6 +30,8 @@ directionToInput d = case d of
   West -> [3]
   East -> [4]
 
+-- We're storing the ProgramState of any Empty squares so we can jut explore any of their neighbours, at any time
+-- When we explore, we make sure to do it in a way that means that the distance will be the shortest from (0,0)
 data SquareContents = Wall
   | Empty ProgramState Distance
   | Target Distance
@@ -40,6 +42,7 @@ instance Show SquareContents where
     Target t -> "Target, distance " ++ (show t)
     Unexplored p d -> "Unexplored at " ++ (show p) ++ ", " ++ (show d)
     Empty _ d -> "Empty (distance " ++ (show d) ++ ")"
+
 isUnexplored :: SquareContents -> Bool
 isUnexplored (Unexplored _ _) = True
 isUnexplored _ = False
@@ -58,6 +61,7 @@ neighbours p = map (move p) [North, South, East, West]
 distance :: Point -> Distance
 distance (x, y) = abs x + abs y
 
+-- We can only explore from an Empty tile, because those are the ones we have a ProgramState for
 explore :: SquareContents -> Direction -> SquareContents
 explore (Empty prog dist) dir
   | result == 0 = Wall
@@ -69,6 +73,7 @@ explore (Empty prog dist) dir
     p' = fromJust . snd $ programStep
 explore _ _ = error "Can't explore from a non-empty square!"
 
+-- We just want to identify which squares are explorable, we don't want to "explore" them yet
 touch :: Point -> SquareContents -> Direction -> SquareContents
 touch point contents dir = case explore contents dir of
   Wall -> Wall
@@ -78,15 +83,18 @@ touch point contents dir = case explore contents dir of
 touchNeighbours :: Point -> GridMap -> GridMap
 touchNeighbours point grid = M.union grid $ M.fromList $ map (\dir -> (move point dir, touch point (grid M.! point) dir)) [North, East, South, West]
 
+-- Finds the closest (to start) unexplored square, explores it and touches its neighbours
 exploreOneSquare :: GridMap -> GridMap
 exploreOneSquare grid = touchNeighbours chosenPoint $ M.insert chosenPoint (explore (grid M.! startingPoint) direction) grid where
   chosenPair = head . sortOn (distance . fst) . M.toList $ M.filter isUnexplored grid
   chosenPoint = fst chosenPair
   (Unexplored startingPoint direction) = snd chosenPair
 
+-- Our initial knowledge
 startingGrid :: GridMap
 startingGrid = (touchNeighbours (0,0) $ M.singleton (0,0) (Empty input 0))
 
+-- Finding our target
 target :: (Point, Distance)
 target = (\(p, Target d) -> (p, d)) . M.findMin . M.filter isTarget . fromJust
   . find (\g -> (M.size $ M.filter isTarget g) > 0)
@@ -95,9 +103,12 @@ target = (\(p, Target d) -> (p, d)) . M.findMin . M.filter isTarget . fromJust
 part1 :: Distance
 part1 = snd target
 
+-- A map with no unexplored tiles (assuming there's nothing past our target)
 fullyExploredMap :: GridMap
 fullyExploredMap = fromJust . find (\g -> (M.size $ M.filter isUnexplored g) == 0) $ iterate exploreOneSquare startingGrid
 
+-- Takes a set of possible tiles to spread to and a set of tiles it's already in
+-- Spreads the oxygen one step
 spreadOxygen :: S.Set Point -> S.Set Point -> S.Set Point
 spreadOxygen emptyPoints oxygenatedPoints = S.union oxygenatedPoints toBeOxygenatedPoints where
   toBeOxygenatedPoints = S.intersection emptyPoints $ S.fromList . concat . S.elems $ S.map neighbours oxygenatedPoints
