@@ -16,11 +16,12 @@ coOrdsOf c ss = map (\(x,y,_) -> (x,y))
 
 -- Splits a list by a predicate, returning consecutive chunks of the list where the predicate is not true
 split :: (a -> Bool) -> [a] -> [[a]]
-split p xs = (case chunk of
-  [] -> []
-  c -> c : split p (dropWhile p r)) where
+split p xs
+  | length xs == 0 = []
+  | length c == 0 = split p (dropWhile p r)
+  | otherwise = c : split p (dropWhile p r) where
     b = break p xs
-    chunk = fst b
+    c = fst b
     r = snd b
 
 (!@) :: (Num a, Ord a) => M.Map a a -> a -> a
